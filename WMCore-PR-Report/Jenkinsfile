@@ -16,24 +16,6 @@ pipeline {
 
                 git branch: 'main', poll: false, url: 'https://github.com/d-ylee/jenkins-test'
 
-                copyArtifacts filter: 'artifacts/nosetest*.xml',
-                fingerprintArtifacts: true,
-                projectName: 'WMCore-Unittest-Baseline-khurtado',
-                selector: lastSuccessful(),
-                target: 'MasterUnitTests'
-
-                copyArtifacts filter: 'artifacts/*.json, artifacts/pep*.txt',
-                fingerprintArtifacts: true,
-                flatten: true,
-                projectName: 'WMCore-PR-pylint',
-                selector: specific('298')
-
-                copyArtifacts filter: 'artifacts/nosetest*.xml',
-                fingerprintArtifacts: true,
-                projectName: 'WMCore-PR-Test-khurtado',
-                selector: specific('293'),
-                target: 'LatestUnitTests'
-
                 sh '''
                 echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
@@ -45,6 +27,62 @@ pipeline {
 
                 ls $WORKSPACE
                 '''
+            }
+        }
+        stage('Trigger downstream PR tests') {
+            parallel {
+                stage('Trigger pylint') {
+                    steps {
+                        script {
+                            def builtPylint = build(
+                                job: 'WMCore-PR-pylint',
+                                parameters: [
+                                    string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
+                                    string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
+                                ]
+                            )
+
+                            copyArtifacts(
+                                filter: 'artifacts/*.json, artifacts/pep*.txt',
+                                fingerprintArtifacts: true,
+                                flatten: true,
+                                projectName: 'WMCore-PR-pylint',
+                                selector: specific("${builtPylint.number}") 
+                            )
+                        }
+                    }
+                }
+                stage('Trigger unittests') {
+                    steps {
+                        script {
+                            def builtTest = build(
+                                job: 'WMCore-PR-Test-khurtado',
+                                propagate: false,
+                                parameters: [
+                                    string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
+                                    string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
+                                ]
+                            )
+
+                            copyArtifacts(
+                                filter: 'artifacts/nosetest*.xml',
+                                fingerprintArtifacts: true,
+                                projectName: 'WMCore-PR-Test-khurtado',
+                                selector: specific("${builtTest.number}"),
+                                target: 'LatestUnitTests'
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        stage('Copy baseline test artifacts') {
+            steps {
+                copyArtifacts filter: 'artifacts/nosetest*.xml',
+                fingerprintArtifacts: true,
+                projectName: 'WMCore-Unittest-Baseline-khurtado',
+                selector: lastSuccessful(),
+                target: 'MasterUnitTests'
             }
         }
         stage('Generate Reports') {
