@@ -24,6 +24,7 @@ pipeline {
 
                 copyArtifacts filter: 'artifacts/*.json, artifacts/pep*.txt',
                 fingerprintArtifacts: true,
+                flatten: true,
                 projectName: 'WMCore-PR-pylint',
                 selector: specific('298')
 
@@ -40,18 +41,18 @@ pipeline {
                 python3 -m venv .
                 $WORKSPACE/bin/pip install jinja2 xunitparser PyGithub
 
+                mkdir -p $WORKSPACE/artifacts
+
                 ls $WORKSPACE
                 '''
             }
         }
-        stage('Compare tests') {
+        stage('Generate Reports') {
             steps {
                 sh '''
-                git clone https://github.com/dmwm/WMCore code
-
                 echo "$(TZ=GMT date): generating PR report..."
 
-                JENKSIN_JINJA_TEMPLATE_PATH=$WORKSPACE/docker/wmcore-dev/templates \
+                JENKINS_JINJA_TEMPLATE_PATH=$WORKSPACE/docker/wmcore-dev/templates \
                 $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/PullRequestReport.py
                 '''
             }
@@ -60,11 +61,7 @@ pipeline {
 
     post {
         always {
-            archiveArtifacts artifacts: 'code/LatestTag, LatestUnitTests/*/nosetestspy3*.xml', followSymlinks: false
-
-            junit testResults: 'artifacts/PullRequestReport.html',
-            skipPublishingChecks: true,
-            stdioRetention: ''
+            archiveArtifacts artifacts: 'artifacts/PullRequestReport.html', followSymlinks: false
 
             cleanWs()
         }
