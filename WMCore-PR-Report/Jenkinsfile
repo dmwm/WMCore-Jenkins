@@ -18,7 +18,7 @@ pipeline {
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                 fingerprintArtifacts: true,
-                projectName: 'WMCore-Unittest-Baseline',
+                projectName: 'WMCore-Unittest-Baseline-khurtado',
                 selector: lastSuccessful(),
                 target: 'MasterUnitTests'
 
@@ -29,7 +29,7 @@ pipeline {
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                 fingerprintArtifacts: true,
-                projectName: 'WMCore-Unittest-Baseline',
+                projectName: 'WMCore-PR-Test-khurtado',
                 selector: specific('293'),
                 target: 'LatestUnitTests'
 
