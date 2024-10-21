@@ -1,7 +1,7 @@
 pipeline {
     agent {
         label 'cms-dmwm-el9'
-    }
+   }
 
     environment {
         CODE_REPO = "WMCore"
@@ -32,6 +32,10 @@ pipeline {
         stage('Trigger downstream PR tests') {
             parallel {
                 stage('Trigger pylint') {
+                    agent {
+                        label 'cms-dmwm-el9'
+                    }
+
                     steps {
                         script {
                             def builtPylint = build(
@@ -49,10 +53,18 @@ pipeline {
                                 projectName: 'WMCore-PR-pylint',
                                 selector: specific("${builtPylint.number}") 
                             )
+
+                            sh '''
+                            ls $WORKSPACE
+                            '''
                         }
                     }
                 }
                 stage('Trigger unittests') {
+                    agent {
+                        label 'cms-dmwm-el9'
+                    }
+
                     steps {
                         script {
                             def builtTest = build(
@@ -71,6 +83,10 @@ pipeline {
                                 selector: specific("${builtTest.number}"),
                                 target: 'LatestUnitTests'
                             )
+
+                            sh '''
+                            ls $WORKSPACE/LatestUnitTests
+                            '''
                         }
                     }
                 }
@@ -83,12 +99,22 @@ pipeline {
                 projectName: 'WMCore-Unittest-Baseline-khurtado',
                 selector: lastSuccessful(),
                 target: 'MasterUnitTests'
+
+                sh '''
+                ls $WORKSPACE/MasterUnitTests
+                '''
             }
         }
         stage('Generate Reports') {
             steps {
                 sh '''
                 echo "$(TZ=GMT date): generating PR report..."
+
+                ls $WORKSPACE
+
+                git clone https://github.com/dmwm/WMCore.git code
+
+                cp $WORKSPACE/code/test/etc/UnstableTests.txt $WORKSPACE/UnstableTests.txt
 
                 JENKINS_JINJA_TEMPLATE_PATH=$WORKSPACE/docker/wmcore-dev/templates \
                 $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/PullRequestReport.py
