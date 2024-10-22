@@ -231,7 +231,14 @@ def buildUnitTestReport(templateEnv, pyName="Python3"):
     return failed, unitTestSummaryHTML, unitTestSummary
 
 
-def reportToGithub(py3UnitTestSummary, py3FailedUnitTests, pylintSummaryPy3, failedPylintPy3, pycodestyleSummary):
+def reportToGithub(py3UnitTestSummary,
+                   py3FailedUnitTests,
+                   pylintSummaryPy3,
+                   failedPylintPy3,
+                   pycodestyleSummary):
+    """
+    Builds Report and GitHub Issue message
+    """
     # Build GitHub Jenkins Results
     try:
         gh = Github(os.environ['DMWMBOT_TOKEN'])
@@ -262,43 +269,68 @@ def reportToGithub(py3UnitTestSummary, py3FailedUnitTests, pylintSummaryPy3, fai
     message = 'Jenkins results:\n'
 
     if py3UnitTestSummary:  # Most of the repositories do not yet have python3 unit tests
-        message += ' * Python3 Unit tests: {}\n'.format(statusMap[py3FailedUnitTests]['readStatus'])
-        if py3UnitTestSummary['newFailures']:
-            message += '   * {} new failures\n'.format(py3UnitTestSummary['newFailures'])
-        if py3UnitTestSummary['deleted']:
-            message += '   * {} tests deleted\n'.format(py3UnitTestSummary['deleted'])
-        if py3UnitTestSummary['okChanges']:
-            message += '   * {} tests no longer failing\n'.format(py3UnitTestSummary['okChanges'])
-        if py3UnitTestSummary['added']:
-            message += '   * {} tests added\n'.format(py3UnitTestSummary['added'])
-        if py3UnitTestSummary['unstableChanges']:
-            message += '   * {} changes in unstable tests\n'.format(py3UnitTestSummary['unstableChanges'])
+        message += (
+            f' * Python3 Unit tests: '
+            f'{statusMap[py3FailedUnitTests]["readStatus"]}\n'
+        )
+        if failures := py3UnitTestSummary['newFailures']:
+            message += f'   * {failures} new failures\n'
+        if deleted := py3UnitTestSummary['deleted']:
+            message += f'   * {deleted} tests deleted\n'
+        if okChanges := py3UnitTestSummary['okChanges']:
+            message += f'   * {okChanges} tests no longer failing\n'
+        if added := py3UnitTestSummary['added']:
+            message += f'   * {added} tests added\n'
+        if unstable := py3UnitTestSummary['unstableChanges']:
+            message += f'   * {unstable} changes in unstable tests\n'
 
     if pylintSummaryPy3:
-        message += ' * Python3 Pylint check: %s\n' % statusMap[failedPylintPy3]['readStatus']
-        if pylintSummaryPy3['failures']:
-            message += '   * %s warnings and errors that must be fixed\n' % pylintSummaryPy3['failures']
-        if pylintSummaryPy3['warnings']:
-            message += '   * %s warnings\n' % pylintSummaryPy3['warnings']
-        if pylintSummaryPy3['comments']:
-            message += '   * %s comments to review\n' % pylintSummaryPy3['comments']
+        message += (
+            f' * Python3 Pylint check: '
+            f'{statusMap[failedPylintPy3]["readStatus"]}\n'
+        )
+        if pylintFails := pylintSummaryPy3['failures']:
+            message += (
+                f'   * {pylintFails} warnings and errors that must be fixed\n'
+            )
+        if warnings := pylintSummaryPy3['warnings']:
+            message += (
+                f'   * {warnings} warnings\n'
+            )
+        if comments := pylintSummaryPy3['comments']:
+            message += (
+                f'   * {comments} comments to review\n'
+            )
 
-    message += ' * Pycodestyle check: %s\n' % statusMap[failedPycodestyle]['readStatus']
-    if pycodestyleSummary['comments']:
-        message += '   * %s comments to review\n' % pycodestyleSummary['comments']
+    message += (
+        f' * Pycodestyle check: '
+        f'{statusMap[failedPycodestyle]["readStatus"]}\n'
+    )
+    if comments := pycodestyleSummary['comments']:
+        message += f'   * {comments} comments to review\n'
 
-    message += "\nDetails at %s\n" % reportURL
-    status = issue.create_comment(message)
+    message += f"\nDetails at {reportURL}\n"
 
-    timeNow = time.strftime("%d %b %Y %H:%M GMT")
-    lastCommit = repo.get_pull(int(issueID)).get_commits().get_page(0)[-1]
+    if issueID == '12151':
+        # GitHub PRs and Issues share the same number pool,
+        # so there won't be a PR with the same number as an issue
+        status = issue.create_comment(message)
 
-    if pylintSummaryPy3:
-        lastCommit.create_status(state=statusMap[failedPylintPy3]['ghStatus'], target_url=reportURL + '#pylintpy3',
-                                description='Finished at %s' % timeNow, context='Py3 Pylint')
-    if py3UnitTestSummary:
-        lastCommit.create_status(state=statusMap[py3FailedUnitTests]['ghStatus'], target_url=reportURL + '#unittestspy3',
-                                description='Finished at %s' % timeNow, context='Py3 Unit tests')
+        timeNow = time.strftime("%d %b %Y %H:%M GMT")
+        lastCommit = repo.get_pull(int(issueID)).get_commits().get_page(0)[-1]
+
+        if pylintSummaryPy3:
+            lastCommit.create_status(
+                state=statusMap[failedPylintPy3]['ghStatus'],
+                target_url=reportURL + '#pylintpy3',
+                description='Finished at %s' % timeNow, context='Py3 Pylint'
+            )
+        if py3UnitTestSummary:
+            lastCommit.create_status(
+                state=statusMap[py3FailedUnitTests]['ghStatus'],
+                target_url=reportURL + '#unittestspy3',
+                description='Finished at %s' % timeNow, context='Py3 Unit tests'
+            )
 
 
 if __name__ == '__main__':

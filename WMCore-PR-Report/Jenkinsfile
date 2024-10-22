@@ -10,7 +10,7 @@ pipeline {
         CODE_REPO = "WMCore"
         WMCORE_REPO = "dmwm"
         TargetIssueID = "0"
-        DMWMBOT_TOKEN2 = credentials('d0bc4ba6-d9c5-4668-9839-1b7ff6f795fe')
+        DMWMBOT_TOKEN = credentials('d0bc4ba6-d9c5-4668-9839-1b7ff6f795fe')
     }
 
     stages {
@@ -18,7 +18,7 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'main', poll: false, url: 'https://github.com/d-ylee/jenkins-test'
+                git branch: 'wmcore-pr-report', poll: false, url: 'https://github.com/d-ylee/jenkins-test'
 
                 sh '''
                 echo "$(TZ=GMT date): Job name is $JOB_NAME"
@@ -28,18 +28,14 @@ pipeline {
                 $WORKSPACE/bin/pip install jinja2 xunitparser PyGithub
 
                 mkdir -p $WORKSPACE/artifacts
-
-                ls $WORKSPACE
                 '''
             }
         }
         stage('Update GitHub PR status') {
             steps {
-
                 sh '''
                 $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/PullRequestTestBegin.py
                 '''
-
             }
         }
         stage('Trigger downstream PR tests') {
