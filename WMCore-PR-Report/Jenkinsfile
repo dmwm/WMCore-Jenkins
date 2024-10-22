@@ -10,6 +10,7 @@ pipeline {
         CODE_REPO = "WMCore"
         WMCORE_REPO = "dmwm"
         TargetIssueID = "0"
+        DMWMBOT_TOKEN2 = credentials('d0bc4ba6-d9c5-4668-9839-1b7ff6f795fe')
     }
 
     stages {
@@ -30,6 +31,15 @@ pipeline {
 
                 ls $WORKSPACE
                 '''
+            }
+        }
+        stage('Update GitHub PR status') {
+            steps {
+
+                sh '''
+                $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/PullRequestTestBegin.py
+                '''
+
             }
         }
         stage('Trigger downstream PR tests') {
@@ -91,12 +101,6 @@ pipeline {
                     projectName: 'WMCore-Unittest-Baseline-khurtado',
                     selector: lastSuccessful(),
                     target: 'MasterUnitTests'
-
-                sh '''
-                ls $WORKSPACE
-                ls $WORKSPACE/LatestUnitTests
-                ls $WORKSPACE/MasterUnitTests
-                '''
             }
         }
         stage('Generate Reports') {

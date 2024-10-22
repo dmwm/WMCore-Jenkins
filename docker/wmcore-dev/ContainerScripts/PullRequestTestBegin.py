@@ -1,11 +1,23 @@
 #! /usr/bin/env python
 
 import os
+import sys
 import time
 
 from github import Github
 
-gh = Github(os.environ['DMWMBOT_TOKEN'])
+try:
+    token = os.environ['DMWMBOT_TOKEN2']
+    print('DMWMBOT_TOKEN2 was defined')
+except KeyError:
+    print('DMWMBOT_TOKEN2 was not defined')
+
+try:
+    gh = Github(os.environ['DMWMBOT_TOKEN'])
+except KeyError:
+    print('DMWMBOT_TOKEN not defined. Not updating PR')
+    sys.exit()
+
 codeRepo = os.environ.get('CODE_REPO', 'WMCore')
 teamName = os.environ.get('WMCORE_REPO', 'dmwm')
 repoName = '%s/%s' % (teamName, codeRepo)
