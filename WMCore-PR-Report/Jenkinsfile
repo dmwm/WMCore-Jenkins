@@ -1,3 +1,6 @@
+def pylintJob
+def unittestJob
+
 pipeline {
     agent {
         label 'cms-dmwm-el9'
@@ -38,25 +41,13 @@ pipeline {
 
                     steps {
                         script {
-                            def builtPylint = build(
+                            pylintJob = build(
                                 job: 'WMCore-PR-pylint',
                                 parameters: [
                                     string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
                                     string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
                                 ]
                             )
-
-                            copyArtifacts(
-                                filter: 'artifacts/*.json, artifacts/pep*.txt',
-                                fingerprintArtifacts: true,
-                                flatten: true,
-                                projectName: 'WMCore-PR-pylint',
-                                selector: specific("${builtPylint.number}") 
-                            )
-
-                            sh '''
-                            ls $WORKSPACE
-                            '''
                         }
                     }
                 }
@@ -67,7 +58,7 @@ pipeline {
 
                     steps {
                         script {
-                            def builtTest = build(
+                            unittestJob = build(
                                 job: 'WMCore-PR-Test-khurtado',
                                 propagate: false,
                                 parameters: [
@@ -75,32 +66,35 @@ pipeline {
                                     string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
                                 ]
                             )
-
-                            copyArtifacts(
-                                filter: 'artifacts/nosetest*.xml',
-                                fingerprintArtifacts: true,
-                                projectName: 'WMCore-PR-Test-khurtado',
-                                selector: specific("${builtTest.number}"),
-                                target: 'LatestUnitTests'
-                            )
-
-                            sh '''
-                            ls $WORKSPACE/LatestUnitTests
-                            '''
                         }
                     }
                 }
             }
         }
-        stage('Copy baseline test artifacts') {
+        stage('Wait for tests and copy artifacts') {
             steps {
+                copyArtifacts filter: 'artifacts/*.json, artifacts/pep*.txt',
+                    fingerprintArtifacts: true,
+                    flatten: true,
+                    projectName: 'WMCore-PR-pylint',
+                    selector: specific("${pylintJob.number}"),
+                    target: 'LatestPylint'
+
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
-                fingerprintArtifacts: true,
-                projectName: 'WMCore-Unittest-Baseline-khurtado',
-                selector: lastSuccessful(),
-                target: 'MasterUnitTests'
+                    fingerprintArtifacts: true,
+                    projectName: 'WMCore-PR-Test-khurtado',
+                    selector: specific("${unittestJob.number}"),
+                    target: 'LatestUnitTests'
+
+                copyArtifacts filter: 'artifacts/nosetest*.xml',
+                    fingerprintArtifacts: true,
+                    projectName: 'WMCore-Unittest-Baseline-khurtado',
+                    selector: lastSuccessful(),
+                    target: 'MasterUnitTests'
 
                 sh '''
+                ls $WORKSPACE
+                ls $WORKSPACE/LatestUnitTests
                 ls $WORKSPACE/MasterUnitTests
                 '''
             }
