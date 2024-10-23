@@ -15,8 +15,10 @@ services:
   mariadb:
     <<: *common-service
     image: registry.cern.ch/cmsweb/mariadb:${MDB_TAG}
+    container_name: mariadb
     volumes:
       - "/tmp:/tmp"
+      - *certs
       - "${HOST_MOUNT_DIR}/srv/mariadb/${MDB_TAG}/install/database:/data/srv/mariadb/current/install/database"
       - "${HOST_MOUNT_DIR}/srv/mariadb/${MDB_TAG}/logs:/data/srv/mariadb/current/logs"
       - "${HOST_MOUNT_DIR}/admin/mariadb:/data/admin/mariadb/"
@@ -30,6 +32,7 @@ services:
   couchdb:
     <<: *common-service
     image: registry.cern.ch/cmsweb/wmagent-couchdb:${COUCH_TAG}
+    container_name: couchdb
     volumes:
       - "/tmp:/tmp"
       - *certs
@@ -84,7 +87,7 @@ services:
   
   wmcore-unittests:
     <<: *wma-base
-    image: registry.cern.ch/cmsweb/wmcore-dev:latest
+    image: registry.cern.ch/cmsweb/wmcore-dev:20240925
     network_mode: "host"
     environment:
       - MY_ID
@@ -96,6 +99,7 @@ services:
     volumes:
       - "/etc/condor:/etc/condor:ro"
       - "/tmp:/tmp"
+      - "/cvmfs:/cvmfs"
       - *certs
       - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/install:/data/srv/wmagent/current/install"
       - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/logs:/data/srv/wmagent/current/logs"

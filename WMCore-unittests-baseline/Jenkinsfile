@@ -56,15 +56,50 @@ pipeline {
                                     echo "Docker Compose version:"
                                     docker compose version
 
+                                    echo "Make sure all containers are stopped"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+
+                                    echo "Docker ps:"
+                                    docker ps
+
+                                    echo "Workspace directory and content:"
+                                    pwd
+                                    ls -l
+
                                     echo "Setting up workspace directories"
                                     $WORKSPACE/WMCore-Test-Base/setup-env.sh
 
-                                    echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    #echo "Make sure all containers are stopped"
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+
+                                    echo "User: $USER"
+                                    whoami
 
                                     echo "Starting containers"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
                                     sleep 10
+
+                                    echo "Check docker ps output"
+                                    docker ps
+
+                                    echo "--Check MariaDB docker logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs mariadb
+                                    echo "--end of MariaDB docker envinronment"
+
+                                    echo "--Check CouchDB docker logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs couchdb
+                                    echo "--end of MariaDB docker envinronment"
+
+                                    echo "--Check CouchDB certificates"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
+                                    echo "--Check WMCore-unittets certificates"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
+                                    echo "--end of MariaDB docker envinronment"
+
 
                                     '''
 
