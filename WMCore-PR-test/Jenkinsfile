@@ -38,8 +38,9 @@ pipeline {
 
                             TEST_SERVICE = 'wmcore-pr-test'
 
-                            ghprbPullId = '11995'
-                            ghprbTargetBranch = 'master'
+                            //ghprbPullId = '12125'
+                            //ghprbPullId = "${ghprbPullId}"
+                            //ghprbTargetBranch = 'master'
 
                             SLICES = 12
                         }
@@ -56,11 +57,31 @@ pipeline {
                                     echo "Docker Compose version:"
                                     docker compose version
 
+                                    echo "Make sure all containers are stopped"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+
+                                    echo "Docker ps:"
+                                    docker ps
+
+                                    echo "Workspace directory and content:"
+                                    pwd
+                                    ls -l
+
+                                    echo "Home area and content:"
+                                    ls -l /home/cmsbld
+                                    #ls -l /home/cmsbld/etc
+                                    #ls -ld /home/cmsbld/etc
+
                                     echo "Setting up workspace directories"
                                     $WORKSPACE/WMCore-Test-Base/setup-env.sh
 
-                                    echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    #echo "Make sure all containers are stopped"
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+
+                                    echo "User: $USER"
+                                    whoami
 
                                     echo "Starting containers"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
