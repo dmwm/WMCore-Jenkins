@@ -9,7 +9,6 @@ pipeline {
     environment {
         CODE_REPO = "WMCore"
         WMCORE_REPO = "dmwm"
-        TargetIssueID = "0"
         DMWMBOT_TOKEN = credentials('d0bc4ba6-d9c5-4668-9839-1b7ff6f795fe')
     }
 
@@ -94,7 +93,7 @@ pipeline {
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                     fingerprintArtifacts: true,
-                    projectName: 'WMCore-Unittest-Baseline-khurtado',
+                    projectName: 'WMCore-Unittest-Baseline-khurtado2',
                     selector: lastSuccessful(),
                     target: 'MasterUnitTests'
             }
