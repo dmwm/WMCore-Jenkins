@@ -26,6 +26,9 @@ pipeline {
                 python3 -m venv .
                 $WORKSPACE/bin/pip install jinja2 xunitparser PyGithub
 
+                echo "Fetching list of unstable tests from github"
+                curl -o $WORKSPACE/UnstableTests.txt https://raw.githubusercontent.com/dmwm/WMCore/master/test/etc/UnstableTests.txt
+
                 mkdir -p $WORKSPACE/artifacts
                 '''
             }
