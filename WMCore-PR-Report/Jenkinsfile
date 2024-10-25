@@ -37,46 +37,34 @@ pipeline {
                 '''
             }
         }
-        stage('Trigger downstream PR tests') {
-            parallel {
-                stage('Trigger pylint') {
-                    agent {
-                        label 'cms-dmwm-el9'
-                    }
-
-                    steps {
-                        script {
-                            pylintJob = build(
-                                job: 'WMCore-PR-pylint',
-                                parameters: [
-                                    string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
-                                    string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
-                                ]
-                            )
-                        }
-                    }
-                }
-                stage('Trigger unittests') {
-                    agent {
-                        label 'cms-dmwm-el9'
-                    }
-
-                    steps {
-                        script {
-                            unittestJob = build(
-                                job: 'WMCore-PR-Test-khurtado',
-                                propagate: false,
-                                parameters: [
-                                    string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
-                                    string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
-                                ]
-                            )
-                        }
-                    }
+        stage('Trigger unittests') {
+            steps {
+                script {
+                    unittestJob = build(
+                        job: 'WMCore-PR-Test-khurtado',
+                        propagate: false,
+                        parameters: [
+                            string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
+                            string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
+                        ]
+                    )
                 }
             }
         }
-        stage('Wait for tests and copy artifacts') {
+        stage('Trigger pylint') {
+            steps {
+                script {
+                    pylintJob = build(
+                        job: 'WMCore-PR-pylint',
+                        parameters: [
+                            string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
+                            string(name: 'ghprbTargetBranch', value: "${env.ghprbTargetBranch}")
+                        ]
+                    )
+                }
+            }
+        }
+        stage('Copy artifacts') {
             steps {
                 copyArtifacts filter: 'artifacts/*.json, artifacts/pep*.txt',
                     fingerprintArtifacts: true,
