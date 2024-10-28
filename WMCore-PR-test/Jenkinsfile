@@ -1,57 +1,139 @@
 pipeline {
     agent {
-        label 'cms-dmwm-el9-10'
-    }
-
-    environment {
-        MY_HOSTNAME = """${sh(
-            returnStdout: true,
-            script: 'hostname -f'
-        ).trim()}"""
-
-        MY_ID = """${sh(
-            returnStdout: true,
-            script: 'id -u'
-        ).trim()}"""
-
-        MY_GROUP = """${sh(
-            returnStdout: true,
-            script: 'id -g'
-        ).trim()}"""
-
-        HOST_MOUNT_DIR = "${env.WORKSPACE}"
-        
-        WMA_TAG = '2.3.3'
-        COUCH_TAG = '3.2.2'
-        MDB_TAG = '10.6.5'
-
+        label 'cms-dmwm-el9'
     }
 
     stages {
-        stage('Setup') {
-            steps {
-                git branch: 'main', url: 'https://github.com/d-ylee/jenkins-test'
-                sh '''
-                   echo "Setting up workspace directories"
-                   $WORKSPACE/WMCore-Test-Base/setup-env.sh
-                   ls $WORKSPACE
-                   echo "python3 version"
-                   python3 --version
-                   '''
-            }
-        }
-        stage('Start Services') {
-            steps {
-                sh ''' 
-                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d wmagent-dev
-                   '''
+        stage('Matrix') {
+            matrix {
+                axes {
+                    axis {
+                        name 'SLICE'
+                        values '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11'
+                    }
+                }
+                stages {
+                    stage('Setup and run a slice') {
+                        environment {
+                            MY_HOSTNAME = """${sh(
+                                returnStdout: true,
+                                script: 'hostname -f'
+                            ).trim()}"""
+
+                            MY_ID = """${sh(
+                                returnStdout: true,
+                                script: 'id -u'
+                            ).trim()}"""
+
+                            MY_GROUP = """${sh(
+                                returnStdout: true,
+                                script: 'id -g'
+                            ).trim()}"""
+
+                            HOST_MOUNT_DIR = "${env.WORKSPACE}"
+                            
+                            WMA_TAG = '2.3.3'
+                            COUCH_TAG = '3.2.2'
+                            MDB_TAG = '10.6.5'
+
+                            TEST_SERVICE = 'wmcore-pr-test'
+
+                            //ghprbPullId = '12125'
+                            //ghprbPullId = "${ghprbPullId}"
+                            //ghprbTargetBranch = 'master'
+
+                            SLICES = 12
+                        }
+                        steps {
+                            throttle(['DMWM-services']) {
+                                node( 'cms-dmwm-el9' ) {
+                                    git branch: 'wmcore-pr-test', url: 'https://github.com/d-ylee/jenkins-test'
+                                    sh '''
+                                    echo "$(TZ=GMT date): Job name is $JOB_NAME"
+
+                                    echo "Docker version:"
+                                    docker version
+
+                                    echo "Docker Compose version:"
+                                    docker compose version
+
+                                    echo "Make sure all containers are stopped"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+
+                                    echo "Docker ps:"
+                                    docker ps
+
+                                    echo "Workspace directory and content:"
+                                    pwd
+                                    ls -l
+
+                                    echo "Home area and content:"
+                                    ls -l /home/cmsbld
+                                    #ls -l /home/cmsbld/etc
+                                    #ls -ld /home/cmsbld/etc
+
+                                    echo "Setting up workspace directories"
+                                    $WORKSPACE/WMCore-Test-Base/setup-env.sh
+
+                                    #echo "Make sure all containers are stopped"
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+
+                                    echo "User: $USER"
+                                    whoami
+
+                                    echo "Starting containers"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                                    sleep 20
+
+                                    '''
+
+                                    catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
+                                        sh ''' 
+                                        echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
+                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                        '''
+
+                                        script {
+                                            stash includes: 'artifacts/nosetests*.xml', name: "${SLICE}-artifacts", allowEmpty: true
+                                        }
+                                    }
+
+                                    sh '''
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down
+                                    '''
+
+                                    cleanWs()
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
 
     post {
         always {
-            sh 'docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down'
+            sh '''
+               docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down
+               '''
+
+            script {
+                for (int i = 0; i < 12; i++) {
+                    unstash "${i}-artifacts"
+                }
+            }
+
+            archiveArtifacts artifacts: 'artifacts/nosetests*.xml',
+                            followSymlinks: false,
+                            fingerprint: true,
+                            onlyIfSuccessful: true
+
+            junit keepTestNames: true, skipPublishingChecks: true, stdioRetention: '', testResults: 'artifacts/nosetests*.xml'
+
+            cleanWs()
         }
     }
 }

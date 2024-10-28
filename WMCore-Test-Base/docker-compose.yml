@@ -68,7 +68,7 @@ services:
       - couchdb
   
   wmcore-pr-pylint:
-    image: registry.cern.ch/cmsweb/wmcore-dev:latest
+    image: registry.cern.ch/cmsweb/wmcore-dev:20240925
     tty: true
     network_mode: "host"
     environment:
@@ -79,6 +79,35 @@ services:
       - BUILD_ID
     command: ["/bin/bash"]
     volumes:
+      - *passwd
+      - *group
+      - *sudoers
+      - *sudoersd
+      - "${HOST_MOUNT_DIR}/artifacts/:/home/cmsbld/artifacts/:Z"
+  
+  wmcore-pr-test:
+    <<: *wma-base
+    image: registry.cern.ch/cmsweb/wmcore-dev:20240925
+    network_mode: "host"
+    environment:
+      - ghprbPullId=${ghprbPullId}
+      - ghprbTargetBranch=${ghprbTargetBranch}
+      - MY_ID
+      - MY_GROUP
+      - BUILD_ID
+      - DMWMBOT_TOKEN
+    user: root
+    pull_policy: always
+    volumes:
+      - "/etc/condor:/etc/condor:ro"
+      - "/tmp:/tmp"
+      - "/cvmfs:/cvmfs"
+      - *certs
+      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/install:/data/srv/wmagent/current/install"
+      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/logs:/data/srv/wmagent/current/logs"
+      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/state:/data/srv/wmagent/current/state"
+      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/config:/data/srv/wmagent/current/config"
+      - *wma-admin
       - *passwd
       - *group
       - *sudoers

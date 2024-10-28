@@ -6,6 +6,7 @@ import time
 
 from github import Github
 
+
 try:
     gh = Github(os.environ['DMWMBOT_TOKEN'])
 except KeyError:

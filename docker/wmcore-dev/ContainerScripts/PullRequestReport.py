@@ -313,6 +313,7 @@ def reportToGithub(py3UnitTestSummary,
 
     # GitHub PRs and Issues share the same number pool,
     # so there won't be a PR with the same number as an issue
+
     status = issue.create_comment(message)
 
     timeNow = time.strftime("%d %b %Y %H:%M GMT")
