@@ -44,7 +44,7 @@ pipeline {
             steps {
                 script {
                     unittestJob = build(
-                        job: 'WMCore-PR-Test-khurtado',
+                        job: 'WMCore-PR-Test',
                         propagate: false,
                         parameters: [
                             string(name: 'ghprbPullId', value: "${env.ghprbPullId}"),
@@ -78,13 +78,13 @@ pipeline {
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                     fingerprintArtifacts: true,
-                    projectName: 'WMCore-PR-Test-khurtado',
+                    projectName: 'WMCore-PR-Test',
                     selector: specific("${unittestJob.number}"),
                     target: 'LatestUnitTests'
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                     fingerprintArtifacts: true,
-                    projectName: 'WMCore-Unittest-Baseline-khurtado2',
+                    projectName: 'WMCore-Unittest-Baseline',
                     selector: lastSuccessful(),
                     target: 'MasterUnitTests'
             }
