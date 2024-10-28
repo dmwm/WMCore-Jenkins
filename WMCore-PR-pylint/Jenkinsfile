@@ -3,6 +3,12 @@ pipeline {
         label 'cms-dmwm-el9'
     }
 
+    parameters {
+        string(name: 'ghprbPullId', defaultValue: '')
+
+        string(name: 'ghprbTargetBranch', defaultValue: 'master')
+    }
+
     environment {
         MY_HOSTNAME = """${sh(
             returnStdout: true,
