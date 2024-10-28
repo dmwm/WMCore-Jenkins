@@ -32,9 +32,8 @@ reportURL = os.environ['BUILD_URL']
 
 lastCommit = repo.get_pull(int(issueID)).get_commits().get_page(0)[-1]
 
-if issueID == '12151':
-    lastCommit.create_status(
-        state='pending',
-        target_url=reportURL,
-        description=f'Tests started at {time.strftime("%d %b %Y %H:%M GMT")}'
-    )
+lastCommit.create_status(
+    state='pending',
+    target_url=reportURL,
+    description=f'Tests started at {time.strftime("%d %b %Y %H:%M GMT")}'
+)

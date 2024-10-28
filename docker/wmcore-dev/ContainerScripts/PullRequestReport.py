@@ -311,26 +311,25 @@ def reportToGithub(py3UnitTestSummary,
 
     message += f"\nDetails at {reportURL}\n"
 
-    if issueID == '12151':
-        # GitHub PRs and Issues share the same number pool,
-        # so there won't be a PR with the same number as an issue
-        status = issue.create_comment(message)
+    # GitHub PRs and Issues share the same number pool,
+    # so there won't be a PR with the same number as an issue
+    status = issue.create_comment(message)
 
-        timeNow = time.strftime("%d %b %Y %H:%M GMT")
-        lastCommit = repo.get_pull(int(issueID)).get_commits().get_page(0)[-1]
+    timeNow = time.strftime("%d %b %Y %H:%M GMT")
+    lastCommit = repo.get_pull(int(issueID)).get_commits().get_page(0)[-1]
 
-        if pylintSummaryPy3:
-            lastCommit.create_status(
-                state=statusMap[failedPylintPy3]['ghStatus'],
-                target_url=reportURL + '#pylintpy3',
-                description='Finished at %s' % timeNow, context='Py3 Pylint'
-            )
-        if py3UnitTestSummary:
-            lastCommit.create_status(
-                state=statusMap[py3FailedUnitTests]['ghStatus'],
-                target_url=reportURL + '#unittestspy3',
-                description='Finished at %s' % timeNow, context='Py3 Unit tests'
-            )
+    if pylintSummaryPy3:
+        lastCommit.create_status(
+            state=statusMap[failedPylintPy3]['ghStatus'],
+            target_url=reportURL + '#pylintpy3',
+            description='Finished at %s' % timeNow, context='Py3 Pylint'
+        )
+    if py3UnitTestSummary:
+        lastCommit.create_status(
+            state=statusMap[py3FailedUnitTests]['ghStatus'],
+            target_url=reportURL + '#unittestspy3',
+            description='Finished at %s' % timeNow, context='Py3 Unit tests'
+        )
 
 
 if __name__ == '__main__':
