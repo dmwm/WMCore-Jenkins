@@ -109,6 +109,8 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'artifacts/PullRequestReport.html', followSymlinks: false
 
+            junit keepTestNames: true, skipPublishingChecks: true, stdioRetention: '', testResults: 'LatestUnitTests/*/nosetests*.xml'
+
             cleanWs()
         }
     }
