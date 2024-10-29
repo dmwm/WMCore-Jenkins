@@ -17,7 +17,7 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'wmcore-pr-report', poll: false, url: 'https://github.com/d-ylee/jenkins-test'
+                git branch: 'main', poll: false, changelog: false, url: 'https://github.com/d-ylee/jenkins-test'
 
                 sh '''
                 echo "$(TZ=GMT date): Job name is $JOB_NAME"
