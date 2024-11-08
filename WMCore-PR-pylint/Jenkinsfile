@@ -38,7 +38,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: 'main', url: 'https://github.com/d-ylee/jenkins-test'
+                git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
                 sh '''
                    echo "Running WMCore-PR-pylint for ${ghprbPullId}"
                    echo "Setting up workspace directories"

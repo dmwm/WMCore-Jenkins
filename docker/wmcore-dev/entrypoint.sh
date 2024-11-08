@@ -18,7 +18,7 @@ fi
 pushd /home/cmsbld
 
 # clone jenkins-test scripts
-git clone https://github.com/d-ylee/jenkins-test
+git clone https://github.com/dmwm/WMCore-Jenkins
 popd
 
 $@
