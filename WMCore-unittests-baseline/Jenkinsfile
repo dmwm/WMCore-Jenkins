@@ -84,13 +84,17 @@ pipeline {
                                     echo "Check docker ps output"
                                     docker ps
 
+                                    echo "--Check wmcore-unittests logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs wmcore-unittests
+                                    echo "--end of wmcore-unittests logs"
+
                                     echo "--Check MariaDB docker logs"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs mariadb
-                                    echo "--end of MariaDB docker envinronment"
+                                    echo "--end of MariaDB docker environment"
 
                                     echo "--Check CouchDB docker logs"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs couchdb
-                                    echo "--end of MariaDB docker envinronment"
+                                    echo "--end of MariaDB docker environment"
 
                                     echo "--Check CouchDB certificates"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
@@ -106,7 +110,7 @@ pipeline {
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                                         sh ''' 
                                         echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/WMCore-Jenkins/docker/wmcore-dev/TestScripts/test-wmcorepy3.sh
                                         '''
 
                                         script {
