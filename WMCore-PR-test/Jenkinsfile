@@ -93,7 +93,7 @@ pipeline {
                                         retry(5) {
                                             sh ''' 
                                             echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                            docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                            docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
                                             '''
 
                                             sleep(5)

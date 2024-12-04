@@ -52,7 +52,7 @@ pipeline {
         stage('Run pylint tests') {
             steps {
                 sh ''' 
-                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run --quiet-pull -d $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
+                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID --quiet-pull -d $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
                    sleep 20
                    # docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
                    '''
