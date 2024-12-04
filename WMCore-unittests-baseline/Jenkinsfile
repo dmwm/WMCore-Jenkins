@@ -57,9 +57,9 @@ pipeline {
                                     docker compose version
 
                                     echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb --rmi all
 
                                     echo "Docker ps:"
                                     docker ps
@@ -119,7 +119,7 @@ pipeline {
                                     }
 
                                     sh '''
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down --rmi all
                                     '''
 
                                     cleanWs()
