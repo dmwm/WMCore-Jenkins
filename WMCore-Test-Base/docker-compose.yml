@@ -68,7 +68,7 @@ services:
       - couchdb
   
   wmcore-pr-pylint:
-    image: registry.cern.ch/cmsweb/wmcore-dev:20240925
+    image: registry.cern.ch/cmsweb/wmcore-dev:20241202
     tty: true
     network_mode: "host"
     environment:
@@ -87,7 +87,7 @@ services:
   
   wmcore-pr-test:
     <<: *wma-base
-    image: registry.cern.ch/cmsweb/wmcore-dev:20240925
+    image: registry.cern.ch/cmsweb/wmcore-dev:20241202
     network_mode: "host"
     environment:
       - ghprbPullId=${ghprbPullId}

@@ -14,7 +14,7 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'main', poll: false, url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: 'test-20241127-image', poll: false, url: 'https://github.com/d-ylee/WMCore-Jenkins'
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                 fingerprintArtifacts: true,

@@ -47,7 +47,7 @@ pipeline {
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                                    git branch: 'test-20241127-image', url: 'https://github.com/d-ylee/WMCore-Jenkins'
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
@@ -58,9 +58,9 @@ pipeline {
                                     docker compose version
 
                                     echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb --rmi all
 
                                     echo "Docker ps:"
                                     docker ps
@@ -78,7 +78,7 @@ pipeline {
                                     $WORKSPACE/WMCore-Test-Base/setup-env.sh
 
                                     #echo "Make sure all containers are stopped"
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
 
                                     echo "User: $USER"
                                     whoami
@@ -101,7 +101,7 @@ pipeline {
                                     }
 
                                     sh '''
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down --rmi all
                                     '''
 
                                     cleanWs()

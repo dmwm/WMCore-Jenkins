@@ -38,7 +38,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: 'test-20241127-image', url: 'https://github.com/d-ylee/WMCore-Jenkins'
                 sh '''
                    echo "Running WMCore-PR-pylint for ${ghprbPullId}"
                    echo "Setting up workspace directories"
@@ -63,7 +63,7 @@ pipeline {
     post {
         always {
             sh '''
-               docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+               docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
                '''
             archiveArtifacts artifacts: 'artifacts/*.json, artifacts/pep*.txt',
                                followSymlinks: false,
