@@ -125,7 +125,6 @@ services:
       - MY_GROUP
       - WMA_CONFIG_FILE
       - BUILD_ID
-    user: cmsbld
     pull_policy: always
     volumes:
       - "/etc/condor:/etc/condor:ro"

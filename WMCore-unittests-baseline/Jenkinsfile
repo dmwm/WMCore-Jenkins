@@ -78,15 +78,11 @@ pipeline {
                                     whoami
 
                                     echo "Starting containers"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb
                                     sleep 10
 
                                     echo "Check docker ps output"
                                     docker ps
-
-                                    echo "--Check wmcore-unittests logs"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs wmcore-unittests
-                                    echo "--end of wmcore-unittests logs"
 
                                     echo "--Check MariaDB docker logs"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs mariadb
@@ -99,10 +95,11 @@ pipeline {
                                     echo "--Check CouchDB certificates"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-                                    echo "--Check WMCore-unittets certificates"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-                                    echo "--end of MariaDB docker envinronment"
+
+                                    #echo "--Check WMCore-unittests certificates"
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
+                                    #echo "--end of WMCore-unittests docker envinronment"
 
 
                                     '''
@@ -110,7 +107,7 @@ pipeline {
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                                         sh ''' 
                                         echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
                                         '''
 
                                         script {
