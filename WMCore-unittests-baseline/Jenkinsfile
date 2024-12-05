@@ -79,7 +79,7 @@ pipeline {
 
                                     echo "Starting containers"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb
-                                    sleep 10
+                                    sleep 20
 
                                     echo "Check docker ps output"
                                     docker ps
@@ -100,8 +100,6 @@ pipeline {
                                     #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
                                     #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
                                     #echo "--end of WMCore-unittests docker envinronment"
-
-
                                     '''
 
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {

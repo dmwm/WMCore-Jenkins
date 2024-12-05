@@ -28,11 +28,10 @@ export COUCHURL="http://${COUCH_USER}:${COUCH_PASS}@${COUCH_HOST}:${COUCH_PORT}"
 # ensure db exists
 # retry if fails
 
-
-for i in 1 2 3 4 5; do
+for i in 1 2 3 4 5 6 7 8 9 10; do
+    echo "Attempt $i to create mariadb database..."
     mysql -u ${MDB_USER} -h 127.0.0.1 -p${MDB_PASS} --execute "CREATE DATABASE IF NOT EXISTS ${MDB_UNITTEST_DB}" && break
 
-    echo "Attempt $i failed. Trying again..."
     sleep 5
 done
 
