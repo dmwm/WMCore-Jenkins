@@ -17,7 +17,7 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'test-20241127-image', poll: false, changelog: false, url: 'https://github.com/d-ylee/WMCore-Jenkins'
+                git branch: 'fix-12187', poll: false, changelog: false, url: 'https://github.com/d-ylee/WMCore-Jenkins'
 
                 sh '''
                 echo "$(TZ=GMT date): Job name is $JOB_NAME"

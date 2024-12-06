@@ -30,6 +30,7 @@ pipeline {
         WMA_TAG = '2.3.3'
         COUCH_TAG = '3.2.2'
         MDB_TAG = '10.6.19'
+        WMCORE_DEV_TAG = '0.2.0'
 
         TEST_SERVICE = 'wmcore-pr-pylint'
 
@@ -38,7 +39,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: 'test-20241127-image', url: 'https://github.com/d-ylee/WMCore-Jenkins'
+                git branch: 'fix-12187', url: 'https://github.com/d-ylee/WMCore-Jenkins'
                 sh '''
                    echo "Running WMCore-PR-pylint for ${ghprbPullId}"
                    echo "Setting up workspace directories"
