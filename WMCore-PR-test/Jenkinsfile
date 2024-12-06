@@ -41,7 +41,7 @@ pipeline {
                             //ghprbPullId = '12125'
                             //ghprbPullId = "${ghprbPullId}"
                             //ghprbTargetBranch = 'master'
-                            WMCORE_DEV_TAG = '0.2.0'
+                            WMCORE_DEV_TAG = '0.2.0-stable'
 
                             SLICES = 12
                         }
