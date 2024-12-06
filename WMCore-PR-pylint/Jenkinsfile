@@ -30,6 +30,7 @@ pipeline {
         WMA_TAG = '2.3.3'
         COUCH_TAG = '3.2.2'
         MDB_TAG = '10.6.19'
+        WMCORE_DEV_TAG = '0.2.0-stable'
 
         TEST_SERVICE = 'wmcore-pr-pylint'
 
@@ -38,7 +39,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: 'fix-12187', url: 'https://github.com/d-ylee/WMCore-Jenkins'
                 sh '''
                    echo "Running WMCore-PR-pylint for ${ghprbPullId}"
                    echo "Setting up workspace directories"
@@ -46,15 +47,18 @@ pipeline {
                    ls $WORKSPACE
                    echo "python3 version"
                    python3 --version
+
+                   echo "Ensuring all compose services are down"
+                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
                    '''
             }
         }
         stage('Run pylint tests') {
             steps {
                 sh ''' 
-                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID --quiet-pull $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
                    sleep 20
-                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
+                   # docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
                    '''
             }
         }
@@ -63,7 +67,7 @@ pipeline {
     post {
         always {
             sh '''
-               docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+               docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
                '''
             archiveArtifacts artifacts: 'artifacts/*.json, artifacts/pep*.txt',
                                followSymlinks: false,

@@ -5,7 +5,7 @@ rm -rf $WORKSPACE/admin $WORKSPACE/certs $WORKSPACE/artifacts
 rm -rf $WORKSPACE/srv/{couchdb,mariadb,wmagent}  
 
 # make directories
-mkdir -p $WORKSPACE/admin/wmagent $WORKSPACE/admin/mariadb $WORKSPACE/certs $WORKSPACE/artifacts
+mkdir -p $WORKSPACE/admin/wmagent $WORKSPACE/admin/mariadb $WORKSPACE/certs $WORKSPACE/artifacts $WORKSPACE/home
 mkdir -p $WORKSPACE/srv/couchdb/${COUCH_TAG}/install
 mkdir -p $WORKSPACE/srv/couchdb/${COUCH_TAG}/logs
 mkdir -p $WORKSPACE/srv/couchdb/${COUCH_TAG}/state

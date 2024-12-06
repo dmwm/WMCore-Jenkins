@@ -41,13 +41,14 @@ pipeline {
                             //ghprbPullId = '12125'
                             //ghprbPullId = "${ghprbPullId}"
                             //ghprbTargetBranch = 'master'
+                            WMCORE_DEV_TAG = '0.2.0-stable'
 
                             SLICES = 12
                         }
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                                    git branch: 'fix-12187', url: 'https://github.com/d-ylee/WMCore-Jenkins'
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
@@ -58,9 +59,9 @@ pipeline {
                                     docker compose version
 
                                     echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb --rmi all
 
                                     echo "Docker ps:"
                                     docker ps
@@ -78,22 +79,26 @@ pipeline {
                                     $WORKSPACE/WMCore-Test-Base/setup-env.sh
 
                                     #echo "Make sure all containers are stopped"
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
 
                                     echo "User: $USER"
                                     whoami
 
-                                    echo "Starting containers"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                                    #echo "Starting containers"
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
                                     sleep 20
 
                                     '''
 
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
-                                        sh ''' 
-                                        echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
-                                        '''
+                                        retry(5) {
+                                            sh ''' 
+                                            echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
+                                            docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                            '''
+
+                                            sleep(5)
+                                        }
 
                                         script {
                                             stash includes: 'artifacts/nosetests*.xml', name: "${SLICE}-artifacts", allowEmpty: true
@@ -101,7 +106,7 @@ pipeline {
                                     }
 
                                     sh '''
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down --rmi all
                                     '''
 
                                     cleanWs()

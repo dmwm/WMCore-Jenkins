@@ -35,6 +35,7 @@ pipeline {
                             WMA_TAG = '2.3.3'
                             COUCH_TAG = '3.2.2'
                             MDB_TAG = '10.6.19'
+                            WMCORE_DEV_TAG = '0.2.0-stable'
 
                             ghprbPullId = '11995'
                             ghprbTargetBranch = 'master'
@@ -46,7 +47,7 @@ pipeline {
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                                    git branch: 'fix-12187', url: 'https://github.com/d-ylee/WMCore-Jenkins'
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
@@ -57,9 +58,9 @@ pipeline {
                                     docker compose version
 
                                     echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb --rmi all
 
                                     echo "Docker ps:"
                                     docker ps
@@ -78,35 +79,34 @@ pipeline {
                                     whoami
 
                                     echo "Starting containers"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
-                                    sleep 10
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb
+                                    sleep 20
 
                                     echo "Check docker ps output"
                                     docker ps
 
                                     echo "--Check MariaDB docker logs"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs mariadb
-                                    echo "--end of MariaDB docker envinronment"
+                                    echo "--end of MariaDB docker environment"
 
                                     echo "--Check CouchDB docker logs"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs couchdb
-                                    echo "--end of MariaDB docker envinronment"
+                                    echo "--end of MariaDB docker environment"
 
                                     echo "--Check CouchDB certificates"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-                                    echo "--Check WMCore-unittets certificates"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-                                    echo "--end of MariaDB docker envinronment"
 
-
+                                    #echo "--Check WMCore-unittests certificates"
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
+                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
+                                    #echo "--end of WMCore-unittests docker envinronment"
                                     '''
 
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                                         sh ''' 
                                         echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
                                         '''
 
                                         script {
@@ -115,7 +115,7 @@ pipeline {
                                     }
 
                                     sh '''
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down --rmi all
                                     '''
 
                                     cleanWs()
