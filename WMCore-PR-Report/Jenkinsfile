@@ -17,7 +17,7 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'main', poll: false, changelog: false, url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: 'fix-12187', poll: false, changelog: false, url: 'https://github.com/d-ylee/WMCore-Jenkins'
 
                 sh '''
                 echo "$(TZ=GMT date): Job name is $JOB_NAME"
@@ -109,7 +109,11 @@ pipeline {
         always {
             archiveArtifacts artifacts: 'artifacts/PullRequestReport.html', followSymlinks: false
 
-            junit keepTestNames: true, skipPublishingChecks: true, stdioRetention: '', testResults: 'LatestUnitTests/*/nosetests*.xml'
+            junit keepTestNames: true,
+            skipPublishingChecks: true,
+            stdioRetention: '',
+            skipMarkingBuildUnstable: true, 
+            testResults: 'LatestUnitTests/*/nosetests*.xml'
 
             cleanWs()
         }

@@ -31,7 +31,7 @@ pipeline {
             steps {
                 withCredentials([string(credentialsId: 'd0bc4ba6-d9c5-4668-9839-1b7ff6f795fe', variable: 'DMWMBOT_TOKEN')]) {
                     sh '''
-                    $WORKSPACE/docker/wmcore-dev/ContainerScripts/tagLatestWMCore.sh
+                    $WORKSPACE/ContainerScripts/tagLatestWMCore.sh
 
                     echo "Finishing up"
                     '''

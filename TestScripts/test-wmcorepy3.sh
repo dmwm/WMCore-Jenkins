@@ -1,6 +1,7 @@
 #! /bin/bash -e
 
 WORKDIR=/home/cmsbld
+SCRIPTDIR=$WORKDIR/TestScripts
 CODE=$WORKDIR/WMCore
 
 pushd $WORKDIR
