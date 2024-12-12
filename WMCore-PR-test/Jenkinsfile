@@ -48,7 +48,7 @@ pipeline {
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: 'fix-12187', url: 'https://github.com/d-ylee/WMCore-Jenkins'
+                                    git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
