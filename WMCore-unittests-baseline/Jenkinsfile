@@ -32,10 +32,10 @@ pipeline {
 
                             HOST_MOUNT_DIR = "${env.WORKSPACE}"
                             
-                            WMA_TAG = '2.3.3'
+                            WMA_TAG = '2.4.0'
                             COUCH_TAG = '3.2.2'
                             MDB_TAG = '10.6.19'
-                            WMCORE_DEV_TAG = '0.2.0-stable'
+                            WMCORE_DEV_TAG = 'py3.12-0.4.0'
 
                             ghprbPullId = '11995'
                             ghprbTargetBranch = 'master'
@@ -79,7 +79,7 @@ pipeline {
                                     whoami
 
                                     echo "Starting containers"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb $TEST_SERVICE
                                     sleep 20
 
                                     echo "Check docker ps output"
@@ -96,11 +96,6 @@ pipeline {
                                     echo "--Check CouchDB certificates"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-
-                                    #echo "--Check WMCore-unittests certificates"
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-                                    #echo "--end of WMCore-unittests docker envinronment"
                                     '''
 
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
