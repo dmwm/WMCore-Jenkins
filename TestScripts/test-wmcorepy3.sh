@@ -47,7 +47,7 @@ git pull origin master
 
 # use ghprbPullId if triggered from a PR
 if [[ ! -z "${ghprbPullId}" ]]; then
-    git fetch --tags  https://github.com/dmwm/WMCore.git "+refs/heads/*:refs/remotes/origin/*"
+    git fetch --tags https://github.com/dmwm/WMCore.git "+refs/heads/*:refs/remotes/origin/*"
     git config remote.origin.url https://github.com/dmwm/WMCore.git
     git config --add remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
     git fetch --tags --quiet  https://github.com/dmwm/WMCore.git "+refs/pull/*:refs/remotes/origin/pr/*"
@@ -59,6 +59,10 @@ if [[ ! -z "${ghprbPullId}" ]]; then
     # Finally give up and just test the tip of the branch
     (git checkout $LATEST_TAG && git merge $COMMIT) || (git checkout master && git merge $COMMIT) || git checkout -f $COMMIT
 fi
+
+# Update Python packages
+sed '/gfal2/d' /home/cmsbld/requirements.txt > /home/cmsbld/requirements-dev.txt
+pip install -r /home/cmsbld/requirements-dev.txt
 
 popd
 

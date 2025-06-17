@@ -90,7 +90,6 @@ services:
       - *group
       - *sudoers
       - *sudoersd
-      - "${HOST_MOUNT_DIR}/home:/home/cmsbld"
       - "${HOST_MOUNT_DIR}/artifacts/:/home/cmsbld/artifacts/:Z"
   
   wmcore-pr-test:
@@ -120,7 +119,6 @@ services:
       - *group
       - *sudoers
       - *sudoersd
-      - "${HOST_MOUNT_DIR}/home:/home/cmsbld"
       - "${HOST_MOUNT_DIR}/artifacts/:/home/cmsbld/artifacts/:Z"
       - "/etc/grid-security:/etc/grid-security:ro"
     depends_on:
@@ -138,6 +136,7 @@ services:
       - MY_GROUP
       - WMA_CONFIG_FILE
       - BUILD_ID
+    user: root
     pull_policy: always
     volumes:
       - "/etc/condor:/etc/condor:ro"
@@ -153,7 +152,6 @@ services:
       - *group
       - *sudoers
       - *sudoersd
-      - "${HOST_MOUNT_DIR}/home:/home/cmsbld"
       - "${HOST_MOUNT_DIR}/artifacts/:/home/cmsbld/artifacts/:Z"
       - "/etc/grid-security:/etc/grid-security:ro"
     depends_on:
