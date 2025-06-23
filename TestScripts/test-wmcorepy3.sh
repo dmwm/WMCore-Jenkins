@@ -84,7 +84,12 @@ perl -p -i -e "s/'--cover-html',//" $CODE/setup_test.py
 export PYTHONPATH=/var/lib/jenkins/additional-library:$PYTHONPATH
 
 # remove old coverage data
-coverage erase
+if [ -x "$(command -v coverage --version)" ]; then
+    echo Coverage installed, erasing old coverage data
+    coverage erase
+else
+    echo "Coverage is not installed, skipping"
+fi
 
 # debugging python interpreters
 echo "Python version is: " && python --version || true
