@@ -56,6 +56,9 @@ pipeline {
                                     echo "Docker Compose version:"
                                     docker compose version
 
+                                    echo "WMCore Jenkins Environment"
+                                    export | grep WMCORE
+
                                     echo "Make sure all containers are stopped"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb --rmi all
