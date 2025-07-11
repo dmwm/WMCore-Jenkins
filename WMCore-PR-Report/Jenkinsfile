@@ -17,10 +17,13 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'main', poll: false, changelog: false, url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: params.WMCORE_JENKINS_REF, poll: false, changelog: false, url: params.WMCORE_JENKINS_REPO
 
                 sh '''
                 echo "$(TZ=GMT date): Job name is $JOB_NAME"
+
+                echo "WMCore Jenkins Environment"
+                export | grep WMCORE
 
                 echo "Creating a venv at $WORKSPACE and installing dependencies"
                 python3 -m venv .
@@ -36,7 +39,7 @@ pipeline {
         stage('Update GitHub PR status') {
             steps {
                 sh '''
-                $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/PullRequestTestBegin.py
+                $WORKSPACE/bin/python $WORKSPACE/ContainerScripts/PullRequestTestBegin.py
                 '''
             }
         }
@@ -98,8 +101,8 @@ pipeline {
 
                 git clone https://github.com/dmwm/WMCore.git code
 
-                JENKINS_JINJA_TEMPLATE_PATH=$WORKSPACE/docker/wmcore-dev/templates \
-                $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/PullRequestReport.py
+                JENKINS_JINJA_TEMPLATE_PATH=$WORKSPACE/templates \
+                $WORKSPACE/bin/python $WORKSPACE/ContainerScripts/PullRequestReport.py
                 '''
             }
         }

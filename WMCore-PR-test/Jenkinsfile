@@ -38,17 +38,12 @@ pipeline {
 
                             TEST_SERVICE = 'wmcore-pr-test'
 
-                            //ghprbPullId = '12125'
-                            //ghprbPullId = "${ghprbPullId}"
-                            //ghprbTargetBranch = 'master'
-                            WMCORE_DEV_TAG = '0.2.0-stable'
-
                             SLICES = 12
                         }
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                                    git branch: params.WMCORE_JENKINS_REF, url: params.WMCORE_JENKINS_REPO
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
@@ -58,8 +53,11 @@ pipeline {
                                     echo "Docker Compose version:"
                                     docker compose version
 
+                                    echo "WMCore Jenkins Environment"
+                                    export | grep WMCORE
+
                                     echo "Make sure all containers are stopped"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down --remove-orphans $TEST_SERVICE --rmi all
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down mariadb --rmi all
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down couchdb --rmi all
 
@@ -72,20 +70,18 @@ pipeline {
 
                                     echo "Home area and content:"
                                     ls -l /home/cmsbld
-                                    #ls -l /home/cmsbld/etc
-                                    #ls -ld /home/cmsbld/etc
 
                                     echo "Setting up workspace directories"
                                     $WORKSPACE/WMCore-Test-Base/setup-env.sh
 
                                     #echo "Make sure all containers are stopped"
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
 
                                     echo "User: $USER"
                                     whoami
 
                                     #echo "Starting containers"
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
                                     sleep 20
 
                                     '''
@@ -94,7 +90,7 @@ pipeline {
                                         retry(5) {
                                             sh ''' 
                                             echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                            docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                            docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
                                             '''
 
                                             sleep(5)

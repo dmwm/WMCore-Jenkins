@@ -83,6 +83,8 @@ services:
       - ghprbTargetBranch=${ghprbTargetBranch}
       - MY_ID
       - MY_GROUP
+      - WMCORE_JENKINS_ORG
+      - WMCORE_JENKINS_REF
       - BUILD_ID
     command: ["/bin/bash"]
     volumes:
@@ -102,6 +104,8 @@ services:
       - MY_ID
       - MY_GROUP
       - BUILD_ID
+      - WMCORE_JENKINS_ORG
+      - WMCORE_JENKINS_REF
       - DMWMBOT_TOKEN
     user: root
     pull_policy: always

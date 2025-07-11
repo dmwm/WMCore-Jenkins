@@ -30,7 +30,6 @@ pipeline {
         WMA_TAG = '2.3.3'
         COUCH_TAG = '3.2.2'
         MDB_TAG = '10.6.19'
-        WMCORE_DEV_TAG = '0.2.0-stable'
 
         TEST_SERVICE = 'wmcore-pr-pylint'
 
@@ -39,26 +38,33 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: params.WMCORE_JENKINS_REF, url: params.WMCORE_JENKINS_REPO
                 sh '''
-                   echo "Running WMCore-PR-pylint for ${ghprbPullId}"
-                   echo "Setting up workspace directories"
-                   $WORKSPACE/WMCore-Test-Base/setup-env.sh
-                   ls $WORKSPACE
-                   echo "python3 version"
-                   python3 --version
+                echo "Running WMCore-PR-pylint for ${ghprbPullId}"
 
-                   echo "Ensuring all compose services are down"
-                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
-                   '''
+                echo "WMCore Jenkins Environment"
+                export | grep WMCORE
+
+                echo "Setting up workspace directories"
+                $WORKSPACE/WMCore-Test-Base/setup-env.sh
+                ls $WORKSPACE
+
+                echo "python3 version"
+                python3 --version
+
+                echo "Ensuring all compose services are down"
+                docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
+
+                echo "Starting unittest container"
+                docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                sleep 20
+                '''
             }
         }
         stage('Run pylint tests') {
             steps {
                 sh ''' 
-                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID --quiet-pull $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
-                   sleep 20
-                   # docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
+                   docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID $TEST_SERVICE /home/cmsbld/TestScripts/pylintPRTest.sh
                    '''
             }
         }
