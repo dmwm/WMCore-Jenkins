@@ -54,26 +54,6 @@ services:
       start_period: 30s
       start_interval: 5s
 
-  wmagent: &wma-base
-    <<: *common-service
-    image: registry.cern.ch/cmsweb/wmagent:${WMA_TAG}
-    volumes:
-      - "/etc/condor:/etc/condor:ro"
-      - "/tmp:/tmp"
-      - *certs
-      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/install:/data/srv/wmagent/current/install"
-      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/logs:/data/srv/wmagent/current/logs"
-      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/state:/data/srv/wmagent/current/state"
-      - "${HOST_MOUNT_DIR}/srv/wmagent/${WMA_TAG}/config:/data/srv/wmagent/current/config"
-      - *wma-admin
-      - *passwd
-      - *group
-      - *sudoers
-      - *sudoersd
-    depends_on:
-      - mariadb
-      - couchdb
-  
   wmcore-pr-pylint:
     image: registry.cern.ch/cmsweb/wmcore-dev:${WMCORE_DEV_TAG}
     tty: true
@@ -84,6 +64,8 @@ services:
       - MY_ID
       - MY_GROUP
       - BUILD_ID
+      - WMCORE_JENKINS_ORG
+      - WMCORE_JENKINS_REF
     command: ["/bin/bash"]
     volumes:
       - *passwd
@@ -102,6 +84,8 @@ services:
       - MY_ID
       - MY_GROUP
       - BUILD_ID
+      - WMCORE_JENKINS_ORG
+      - WMCORE_JENKINS_REF
       - DMWMBOT_TOKEN
     user: root
     pull_policy: always
