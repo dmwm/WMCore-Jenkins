@@ -37,7 +37,6 @@ pipeline {
                             MDB_TAG = '10.6.19'
                             WMCORE_DEV_TAG = 'py3.12-2.4.2rc4'
                             WMCORE_JENKINS_URL = 'https://github.com/d-ylee/WMCore-Jenkins'
-                            WMCORE_JENKINS_ORG = 'd-ylee'
                             WMCORE_JENKINS_TAG = 'fix-12383_update-to-python3.12'
 
                             ghprbPullId = '11995'
@@ -50,7 +49,7 @@ pipeline {
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: env.WMCORE_JENKINS_TAG, url: env.WMCORE_JENKINS_URL
+                                    git branch: params.WMCORE_JENKINS_REF, url: params.WMCORE_JENKINS_REPO
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
