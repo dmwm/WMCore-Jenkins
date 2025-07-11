@@ -8,6 +8,8 @@ pushd $WORKDIR
 
 start=`date +%s`
 
+ls $WORKDIR
+
 set +x
 # load environment
 echo "Sourcing a python3 unittest environment"
