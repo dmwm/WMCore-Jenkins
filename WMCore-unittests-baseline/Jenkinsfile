@@ -35,7 +35,6 @@ pipeline {
                             WMA_TAG = '2.4.0'
                             COUCH_TAG = '3.2.2'
                             MDB_TAG = '10.6.19'
-                            WMCORE_DEV_TAG = 'py3.12-2.4.2rc4'
 
                             ghprbPullId = '11995'
                             ghprbTargetBranch = 'master'
