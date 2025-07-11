@@ -36,8 +36,6 @@ pipeline {
                             COUCH_TAG = '3.2.2'
                             MDB_TAG = '10.6.19'
                             WMCORE_DEV_TAG = 'py3.12-2.4.2rc4'
-                            WMCORE_JENKINS_URL = 'https://github.com/d-ylee/WMCore-Jenkins'
-                            WMCORE_JENKINS_TAG = 'fix-12383_update-to-python3.12'
 
                             ghprbPullId = '11995'
                             ghprbTargetBranch = 'master'
@@ -98,6 +96,11 @@ pipeline {
                                     echo "--Check CouchDB certificates"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
+
+                                    echo "--Check wmcore-unittest logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs $TEST_SERVICE
+                                    echo "--end of wmcore-unittest logs"
+
                                     '''
 
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {

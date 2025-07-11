@@ -137,7 +137,7 @@ services:
       - WMA_CONFIG_FILE
       - BUILD_ID
       - WMCORE_JENKINS_ORG
-      - WMCORE_JENKINS_TAG
+      - WMCORE_JENKINS_REF
     user: root
     pull_policy: always
     volumes:
