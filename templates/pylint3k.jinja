@@ -1,0 +1,30 @@
+{% macro line_report(line, severity, code, module, message, okWarnings) -%}
+    {%- if module %}
+        {{ severity }}{{ code }}, line {{ line }} in {{ module }}: {{ message }}
+    {%- else %}
+        {{ severity }}{{ code }}, line {{ line }}: {{ message }}
+    {%- endif %}
+{%- endmacro %}
+
+
+<a name="pylint3k"/>
+<h1 id="pylint3k">Report from pylint Python 3 incompatible code, by file and severity</h1>
+<ul>
+    {% for filename, filereport in report|dictsort %}
+        <li>{{ filename }}</li>
+        <ul>
+            {% for severity in ['E', 'W', 'R', 'C', 'I'] %} {# EWRCI #}
+                {% if 'test' in filereport %}
+                    {% for event in filereport['test']['events'] %}
+                        {% if event[1] == severity %}
+                            <li>{{ line_report(event[0], event[1], event[2], event[3], event[4], okWarnings) }}</li>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endfor %}
+    {% if not report %}
+        <li>Nothing to report</li>
+    {% endif %}
+</ul>
