@@ -80,9 +80,28 @@ pipeline {
                                     echo "User: $USER"
                                     whoami
 
-                                    #echo "Starting containers"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d $TEST_SERVICE
+                                    echo "Starting containers"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb $TEST_SERVICE
                                     sleep 20
+
+                                    echo "Check docker ps output"
+                                    docker ps
+
+                                    echo "--Check MariaDB docker logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs mariadb
+                                    echo "--end of MariaDB docker environment"
+
+                                    echo "--Check CouchDB docker logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs couchdb
+                                    echo "--end of MariaDB docker environment"
+
+                                    echo "--Check CouchDB certificates"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
+
+                                    echo "--Check wmcore-unittest logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs $TEST_SERVICE
+                                    echo "--end of wmcore-unittest logs"
 
                                     '''
 
