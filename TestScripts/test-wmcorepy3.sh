@@ -62,6 +62,8 @@ if [[ ! -z "${ghprbPullId}" ]]; then
     (git checkout $LATEST_TAG && git merge $COMMIT) || (git checkout master && git merge $COMMIT) || git checkout -f $COMMIT
 fi
 
+echo $PYTHONPATH
+
 # Update Python packages
 sed '/gfal2/d' $CODE/requirements.txt > $CODE/requirements-dev.txt
 pip install -r $CODE/requirements-dev.txt
