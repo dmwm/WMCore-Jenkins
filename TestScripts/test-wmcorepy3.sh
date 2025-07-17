@@ -63,8 +63,8 @@ if [[ ! -z "${ghprbPullId}" ]]; then
 fi
 
 # Update Python packages
-sed '/gfal2/d' /home/cmsbld/requirements.txt > /home/cmsbld/requirements-dev.txt
-pip install -r /home/cmsbld/requirements-dev.txt
+sed '/gfal2/d' $CODE/requirements.txt > $CODE/requirements-dev.txt
+pip install -r $CODE/requirements-dev.txt
 
 popd
 
