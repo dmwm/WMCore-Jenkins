@@ -8,6 +8,8 @@ pushd $WORKDIR
 
 start=`date +%s`
 
+ls $WORKDIR
+
 set +x
 # load environment
 echo "Sourcing a python3 unittest environment"
@@ -47,7 +49,7 @@ git pull origin master
 
 # use ghprbPullId if triggered from a PR
 if [[ ! -z "${ghprbPullId}" ]]; then
-    git fetch --tags  https://github.com/dmwm/WMCore.git "+refs/heads/*:refs/remotes/origin/*"
+    git fetch --tags https://github.com/dmwm/WMCore.git "+refs/heads/*:refs/remotes/origin/*"
     git config remote.origin.url https://github.com/dmwm/WMCore.git
     git config --add remote.origin.fetch "+refs/heads/*:refs/remotes/origin/*"
     git fetch --tags --quiet  https://github.com/dmwm/WMCore.git "+refs/pull/*:refs/remotes/origin/pr/*"
@@ -59,6 +61,12 @@ if [[ ! -z "${ghprbPullId}" ]]; then
     # Finally give up and just test the tip of the branch
     (git checkout $LATEST_TAG && git merge $COMMIT) || (git checkout master && git merge $COMMIT) || git checkout -f $COMMIT
 fi
+
+echo $PYTHONPATH
+
+# Update Python packages
+sed '/gfal2/d' $CODE/requirements.txt > $CODE/requirements-dev.txt
+pip install -r $CODE/requirements-dev.txt
 
 popd
 
@@ -80,7 +88,12 @@ perl -p -i -e "s/'--cover-html',//" $CODE/setup_test.py
 export PYTHONPATH=/var/lib/jenkins/additional-library:$PYTHONPATH
 
 # remove old coverage data
-coverage erase
+if [ -x "$(command -v coverage --version)" ]; then
+    echo Coverage installed, erasing old coverage data
+    coverage erase
+else
+    echo "Coverage is not installed, skipping"
+fi
 
 # debugging python interpreters
 echo "Python version is: " && python --version || true

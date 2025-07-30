@@ -14,7 +14,7 @@ pipeline {
             steps {
                 cleanWs()
 
-                git branch: 'main', poll: false, url: 'https://github.com/dmwm/WMCore-Jenkins'
+                git branch: params.WMCORE_JENKINS_REF, poll: false, url: params.WMCORE_JENKINS_REPO
 
                 copyArtifacts filter: 'artifacts/nosetest*.xml',
                 fingerprintArtifacts: true,
@@ -42,7 +42,7 @@ pipeline {
 
                     echo "$(TZ=GMT date): comparing tests..."
 
-                    $WORKSPACE/bin/python $WORKSPACE/docker/wmcore-dev/ContainerScripts/CompareTests.py nosetestspy3
+                    $WORKSPACE/bin/python $WORKSPACE/ContainerScripts/CompareTests.py nosetestspy3
 
                     pushd code
                     `git tag |grep JENKINS| sort | tail -1 > LatestTag`

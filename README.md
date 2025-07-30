@@ -20,6 +20,12 @@ This respository contains Jenkinsfiles that configure Jenkins Pipelines used to 
     * Currently, the custom test image is located in the CMS Registry
       * registry.cern.ch/cmsweb/wmcore-dev
 
+## Jenkins Parameters
+* `WMCORE_DEV_TAG`: Tag for the wmcore_dev image
+* `WMCORE_JENKINS_ORG`: Organization of the WMCore-Jenkins repo
+* `WMCORE_JENKINS_REPO`: URL for the WMCore-Jenkins repo
+* `WMCORE_JENKINS_REF`: Ref, tag, or branch of WMCore-Jenkins
+
 ## Equivalent Jenkins Jobs/Pipeline
 | Original Job/Test           | New Pipeline/Test         | Description                                                                         |
 | :-------------------------- | :------------------------ | :---------------------------------------------------------------------------------- |
@@ -30,3 +36,8 @@ This respository contains Jenkinsfiles that configure Jenkins Pipelines used to 
 | DMWM-WMCore-PR-test         | WMCore-PR-Report          | Triggered by PR in `dmwm/WMCore`, runs PR-pylint and PR-Test and reports back to PR |
 | DMWM-WMCore-PR-pylintpy3    | WMCore-PR-pylint          | Runs pylint tests, triggered by WMCore-PR-Report                                    |
 | DMWM-WMCorePy3-PR-unittests | WMCore-PR-Test            | Runs WMCore Unit tests on a PR, triggered by WMCore-PR-Report                       |
+
+## Developer Image
+* Need source env_unittest.sh (TODO: Check exactly which variables)
+* Need X509_HOST/USER_CERT/KEY set
+* PYTHONPATH properly set

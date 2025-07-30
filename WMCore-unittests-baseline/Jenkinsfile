@@ -32,10 +32,9 @@ pipeline {
 
                             HOST_MOUNT_DIR = "${env.WORKSPACE}"
                             
-                            WMA_TAG = '2.3.3'
+                            WMA_TAG = '2.4.0'
                             COUCH_TAG = '3.2.2'
                             MDB_TAG = '10.6.19'
-                            WMCORE_DEV_TAG = '0.2.0-stable'
 
                             ghprbPullId = '11995'
                             ghprbTargetBranch = 'master'
@@ -47,7 +46,7 @@ pipeline {
                         steps {
                             throttle(['DMWM-services']) {
                                 node( 'cms-dmwm-el9' ) {
-                                    git branch: 'main', url: 'https://github.com/dmwm/WMCore-Jenkins'
+                                    git branch: params.WMCORE_JENKINS_REF, url: params.WMCORE_JENKINS_REPO
                                     sh '''
                                     echo "$(TZ=GMT date): Job name is $JOB_NAME"
 
@@ -56,6 +55,9 @@ pipeline {
 
                                     echo "Docker Compose version:"
                                     docker compose version
+
+                                    echo "WMCore Jenkins Environment"
+                                    export | grep WMCORE
 
                                     echo "Make sure all containers are stopped"
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml down $TEST_SERVICE --rmi all
@@ -79,7 +81,7 @@ pipeline {
                                     whoami
 
                                     echo "Starting containers"
-                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml up --quiet-pull -d mariadb couchdb $TEST_SERVICE
                                     sleep 20
 
                                     echo "Check docker ps output"
@@ -97,16 +99,16 @@ pipeline {
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb ls -l /data/certs
                                     docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T couchdb openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
 
-                                    #echo "--Check WMCore-unittests certificates"
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests ls -l /data/certs
-                                    #docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -T wmcore-unittests openssl x509 -in /data/certs/servicecert.pem -noout -dates -subject
-                                    #echo "--end of WMCore-unittests docker envinronment"
+                                    echo "--Check wmcore-unittest logs"
+                                    docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml logs $TEST_SERVICE
+                                    echo "--end of wmcore-unittest logs"
+
                                     '''
 
                                     catchError(buildResult: 'FAILURE', stageResult: 'FAILURE') {
                                         sh ''' 
                                         echo "Testing slice $SLICE of $SLICES for build $BUILD_ID"
-                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml run -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
+                                        docker compose -f $WORKSPACE/WMCore-Test-Base/docker-compose.yml exec -u $MY_ID -e BUILD_ID=$BUILD_ID -e SLICES=$SLICES -e SLICE=$SLICE $TEST_SERVICE /home/cmsbld/TestScripts/test-wmcorepy3.sh
                                         '''
 
                                         script {
