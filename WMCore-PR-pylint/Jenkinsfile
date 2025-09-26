@@ -29,7 +29,7 @@ pipeline {
 
         WMA_TAG = '2.3.3'
         COUCH_TAG = '3.2.2'
-        MDB_TAG = '11.8.2'
+        MDB_TAG = '10.6.19'
 
         TEST_SERVICE = 'wmcore-pr-pylint'
 
