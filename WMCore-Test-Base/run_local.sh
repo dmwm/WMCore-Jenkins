@@ -7,5 +7,5 @@ export WORKSPACE=/home/cmsbld/workspace
 export HOST_MOUNT_DIR=$WORKSPACE
 export WMA_TAG=2.3.3
 export COUCH_TAG=3.2.2
-export MDB_TAG=10.6.19
+export MDB_TAG=11.8.2
 
