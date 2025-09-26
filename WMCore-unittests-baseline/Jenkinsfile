@@ -34,7 +34,7 @@ pipeline {
                             
                             WMA_TAG = '2.4.0'
                             COUCH_TAG = '3.2.2'
-                            MDB_TAG = '10.6.19'
+                            MDB_TAG = '11.8.2'
 
                             ghprbPullId = '11995'
                             ghprbTargetBranch = 'master'
