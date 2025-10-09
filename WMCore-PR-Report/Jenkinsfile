@@ -6,6 +6,10 @@ pipeline {
         label 'cms-dmwm-el9'
    }
 
+   options {
+       timeout(time: 30, unit: 'MINUTES')
+   }
+
     environment {
         CODE_REPO = "WMCore"
         WMCORE_REPO = "dmwm"
